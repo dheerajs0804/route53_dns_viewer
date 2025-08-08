@@ -1,0 +1,109 @@
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.login-card {
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+}
+
+.login-card mat-card-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.header-icon {
+  margin-right: 8px;
+  color: #667eea;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.form-actions {
+  margin-top: 24px;
+  text-align: center;
+}
+
+.login-button {
+  min-width: 200px;
+  height: 48px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.login-button mat-spinner {
+  margin-right: 8px;
+}
+
+.info-section {
+  margin-top: 20px;
+}
+
+.info-content {
+  padding: 16px 0;
+  line-height: 1.6;
+}
+
+.info-content ol {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.info-content li {
+  margin: 4px 0;
+}
+
+.info-content code {
+  background-color: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+}
+
+mat-expansion-panel {
+  box-shadow: none;
+  border: 1px solid #e0e0e0;
+}
+
+mat-expansion-panel-header {
+  padding: 12px 16px;
+}
+
+mat-panel-title {
+  align-items: center;
+  gap: 8px;
+}
+
+mat-panel-title mat-icon {
+  color: #667eea;
+}
+
+// Responsive design
+@media (max-width: 600px) {
+  .login-container {
+    padding: 10px;
+  }
+  
+  .login-card {
+    max-width: 100%;
+  }
+  
+  .login-button {
+    min-width: 100%;
+  }
+}

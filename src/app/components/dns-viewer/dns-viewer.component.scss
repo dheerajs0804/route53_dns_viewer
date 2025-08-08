@@ -1,0 +1,190 @@
+.dns-viewer-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.toolbar-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background-color: #f5f5f5;
+}
+
+.search-card {
+  margin-bottom: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.search-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.zone-field {
+  flex: 2;
+}
+
+.prefix-field {
+  flex: 1;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.search-button {
+  min-width: 150px;
+  height: 48px;
+}
+
+.results-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.results-card mat-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.dns-table {
+  width: 100%;
+  min-width: 800px;
+}
+
+.dns-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #495057;
+}
+
+.dns-table td {
+  padding: 12px 8px;
+  vertical-align: top;
+}
+
+.record-name {
+  font-weight: 500;
+  color: #212529;
+  word-break: break-all;
+}
+
+.record-id {
+  font-size: 12px;
+  color: #6c757d;
+  margin-top: 4px;
+}
+
+.values-container {
+  max-width: 300px;
+}
+
+.value-item {
+  background-color: #e9ecef;
+  padding: 4px 8px;
+  margin: 2px 0;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.no-values {
+  color: #6c757d;
+  font-style: italic;
+}
+
+.no-results-card {
+  text-align: center;
+  padding: 40px;
+}
+
+.no-results-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.no-results-icon {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+  color: #6c757d;
+}
+
+.no-results-content h3 {
+  margin: 0;
+  color: #495057;
+}
+
+.no-results-content p {
+  margin: 0;
+  color: #6c757d;
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .content {
+    padding: 10px;
+  }
+  
+  .form-row {
+    flex-direction: column;
+  }
+  
+  .zone-field,
+  .prefix-field {
+    flex: none;
+  }
+  
+  .dns-table {
+    min-width: 600px;
+  }
+  
+  .values-container {
+    max-width: 200px;
+  }
+}
+
+// Custom snackbar styles
+::ng-deep .success-snackbar {
+  background-color: #28a745;
+  color: white;
+}
+
+::ng-deep .error-snackbar {
+  background-color: #dc3545;
+  color: white;
+}
