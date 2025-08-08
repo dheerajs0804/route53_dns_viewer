@@ -1,4 +1,21 @@
 <div class="login-container">
-  <h2>Welcome</h2>
-  <button mat-raised-button color="primary" (click)="login()">Login</button>
+  <div class="login-card">
+    <div class="login-header">
+      <mat-icon class="login-icon">search</mat-icon>
+      <h1>Route 53 DNS Viewer</h1>
+      <p>Welcome back! Please sign in to continue.</p>
+    </div>
+    
+    <div class="login-content">
+      <button mat-raised-button 
+              color="primary" 
+              (click)="login()" 
+              [disabled]="isLoading"
+              class="login-button">
+        <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
+        <span *ngIf="!isLoading">Sign In</span>
+        <span *ngIf="isLoading">Signing In...</span>
+      </button>
+    </div>
+  </div>
 </div>

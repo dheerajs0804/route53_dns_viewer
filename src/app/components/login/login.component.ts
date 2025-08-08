@@ -4,6 +4,8 @@ import { AuthService } from '../../services/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -14,7 +16,9 @@ import { CommonModule } from '@angular/common';
   imports: [
     CommonModule,
     MatCardModule,
-    MatButtonModule
+    MatButtonModule,
+    MatIconModule,
+    MatProgressSpinnerModule
   ]
 })
 export class LoginComponent {
@@ -28,8 +32,16 @@ export class LoginComponent {
 
   login(): void {
     this.isLoading = true;
-    this.authService.login();
-    this.snackBar.open('Logged in successfully', 'Close', { duration: 2000 });
-    this.router.navigate(['/dns-viewer']);
+    
+    // Simulate loading time for better UX
+    setTimeout(() => {
+      this.authService.login();
+      this.snackBar.open('Signed in successfully', 'Close', { 
+        duration: 2000,
+        panelClass: ['success-snackbar']
+      });
+      this.router.navigate(['/dns-viewer']);
+      this.isLoading = false;
+    }, 1000);
   }
 }

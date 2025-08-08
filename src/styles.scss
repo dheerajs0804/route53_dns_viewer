@@ -1,39 +1,43 @@
-/* You can add global styles to this file, and also import other style files */
+/* Global styles */
 @import '@angular/material/prebuilt-themes/indigo-pink.css';
 
-/* Global styles */
 html, body {
   height: 100%;
   margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  background: #1a1d29;
+  color: #ffffff;
 }
 
 * {
   box-sizing: border-box;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar for dark theme */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #232738;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
+  background: #4b5563;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: #6b7280;
 }
 
-/* Material Design overrides */
+/* Material Design overrides for dark theme */
 .mat-mdc-card {
-  border-radius: 8px !important;
+  border-radius: 12px !important;
+  background: #232738 !important;
+  color: #ffffff !important;
+  border: 1px solid #3a3f51 !important;
 }
 
 .mat-mdc-form-field {
@@ -44,13 +48,68 @@ html, body {
   text-transform: none !important;
 }
 
+/* Override Material theme for dark mode */
+.mat-mdc-raised-button {
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+}
+
+.mat-mdc-icon-button {
+  border-radius: 8px !important;
+}
+
 /* Success and error snackbar styles */
 .success-snackbar {
-  background-color: #4caf50 !important;
+  background-color: #059669 !important;
   color: white !important;
 }
 
 .error-snackbar {
-  background-color: #f44336 !important;
+  background-color: #dc2626 !important;
   color: white !important;
+}
+
+/* Material Select Panel Dark Theme */
+.mat-mdc-select-panel {
+  background-color: #232738 !important;
+  border: 1px solid #3a3f51 !important;
+  border-radius: 8px !important;
+}
+
+.mat-mdc-option {
+  color: #ffffff !important;
+}
+
+.mat-mdc-option:hover {
+  background-color: #3a3f51 !important;
+}
+
+.mat-mdc-option.mdc-list-item--selected {
+  background-color: #5b6ad0 !important;
+  color: #ffffff !important;
+}
+
+/* Material Menu Dark Theme */
+.mat-mdc-menu-panel {
+  background-color: #232738 !important;
+  border: 1px solid #3a3f51 !important;
+  border-radius: 8px !important;
+}
+
+.mat-mdc-menu-item {
+  color: #ffffff !important;
+}
+
+.mat-mdc-menu-item:hover {
+  background-color: #3a3f51 !important;
+}
+
+/* Material Snackbar Dark Theme */
+.mat-mdc-snack-bar-container {
+  border-radius: 8px !important;
+}
+
+/* Material Spinner Dark Theme */
+.mat-mdc-progress-spinner circle {
+  stroke: #5b6ad0 !important;
 }

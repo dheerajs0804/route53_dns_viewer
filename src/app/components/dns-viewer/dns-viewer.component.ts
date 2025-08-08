@@ -103,6 +103,12 @@ export class DnsViewerComponent implements OnInit, OnDestroy {
       next: (zones) => {
         this.hostedZones = zones;
         this.isLoadingZones = false;
+        
+        // Auto-select first zone if available
+        if (zones.length > 0 && !this.searchForm.get('hostedZoneId')?.value) {
+          this.searchForm.patchValue({ hostedZoneId: zones[0].id });
+          this.searchRecords();
+        }
       },
       error: (error) => {
         this.isLoadingZones = false;
@@ -124,11 +130,6 @@ export class DnsViewerComponent implements OnInit, OnDestroy {
           this.dnsRecords = records;
           this.dataSource.data = records;
           this.isLoading = false;
-          
-          this.snackBar.open(`Found ${records.length} DNS records`, 'Close', {
-            duration: 3000,
-            panelClass: ['success-snackbar']
-          });
         },
         error: (error) => {
           this.isLoading = false;
@@ -205,21 +206,6 @@ export class DnsViewerComponent implements OnInit, OnDestroy {
     if (values.length === 0) return '-';
     if (values.length === 1) return values[0];
     return values.join(', ');
-  }
-
-  getTypeColor(type: string): string {
-    const typeColors: { [key: string]: string } = {
-      'A': 'primary',
-      'AAAA': 'accent',
-      'CNAME': 'warn',
-      'MX': 'primary',
-      'TXT': 'accent',
-      'NS': 'warn',
-      'SOA': 'primary',
-      'SRV': 'accent',
-      'CAA': 'warn'
-    };
-    return typeColors[type] || 'primary';
   }
 
   copyToClipboard(text: string): void {

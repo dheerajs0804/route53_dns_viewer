@@ -1,138 +1,125 @@
 <div class="dns-viewer-container">
   <!-- Header -->
-  <mat-toolbar color="primary" class="toolbar">
-    <mat-toolbar-row>
-      <span class="toolbar-title">
-        <mat-icon>dns</mat-icon>
-        Route 53 DNS Viewer
-      </span>
-      <span class="spacer"></span>
-      <button mat-icon-button (click)="logout()" matTooltip="Logout">
+  <div class="header">
+    <div class="header-left">
+      <mat-icon class="header-icon">search</mat-icon>
+      <span class="header-title">Route 53 DNS Viewer</span>
+    </div>
+    <div class="header-right">
+      <button mat-icon-button (click)="logout()" class="logout-btn">
         <mat-icon>logout</mat-icon>
       </button>
-    </mat-toolbar-row>
-  </mat-toolbar>
+    </div>
+  </div>
 
   <div class="content">
     <!-- Search Form -->
-    <mat-card class="search-card">
-      <mat-card-header>
-        <mat-card-title>Search DNS Records</mat-card-title>
-        <mat-card-subtitle>Select a hosted zone and enter a prefix to filter records</mat-card-subtitle>
-      </mat-card-header>
+    <div class="search-section">
+      <h2 class="section-title">Search DNS Records</h2>
+      <p class="section-subtitle">Select a hosted zone and enter a prefix to filter records</p>
 
-      <mat-card-content>
-        <form [formGroup]="searchForm" class="search-form">
-          <div class="form-row">
-            <mat-form-field appearance="outline" class="zone-field">
-              <mat-label>Hosted Zone</mat-label>
+      <form [formGroup]="searchForm" class="search-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Hosted Zone</label>
+            <mat-form-field appearance="fill" class="hosted-zone-select">
               <mat-select formControlName="hostedZoneId" (selectionChange)="onZoneSelectionChange()">
                 <mat-option *ngFor="let zone of hostedZones" [value]="zone.id">
                   {{ zone.name }} ({{ zone.id }})
                 </mat-option>
               </mat-select>
-              <mat-error *ngIf="searchForm.get('hostedZoneId')?.hasError('required')">
-                Hosted zone is required
-              </mat-error>
-              <mat-spinner diameter="20" *ngIf="isLoadingZones" matSuffix></mat-spinner>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="prefix-field">
-              <mat-label>Search Prefix</mat-label>
-              <input matInput formControlName="prefix" placeholder="e.g., www, api, subdomain">
-              <mat-hint>Leave empty to show all records</mat-hint>
-              <button mat-icon-button matSuffix (click)="clearSearch()" *ngIf="searchForm.get('prefix')?.value">
-                <mat-icon>clear</mat-icon>
-              </button>
             </mat-form-field>
           </div>
 
-          <div class="form-actions">
+          <div class="form-group">
+            <label class="form-label">Search Prefix</label>
+            <mat-form-field appearance="fill" class="search-input">
+              <input matInput 
+                     formControlName="prefix" 
+                     placeholder="e.g., www, api, subdomain">
+              <button mat-icon-button 
+                      matSuffix 
+                      (click)="clearSearch()" 
+                      *ngIf="searchForm.get('prefix')?.value"
+                      class="clear-btn">
+                <mat-icon>close</mat-icon>
+              </button>
+            </mat-form-field>
+            <span class="form-hint">Leave empty to show all records</span>
+          </div>
+
+          <div class="form-group">
             <button mat-raised-button 
                     color="primary" 
                     (click)="searchRecords()"
                     [disabled]="searchForm.invalid || isLoading"
-                    class="search-button">
-              <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
-              <span *ngIf="!isLoading">Search Records</span>
+                    class="search-btn">
+              <mat-icon>refresh</mat-icon>
+              <span>Search Records</span>
             </button>
           </div>
-        </form>
-      </mat-card-content>
-    </mat-card>
+        </div>
+      </form>
+    </div>
 
     <!-- Results Section -->
-    <mat-card class="results-card" *ngIf="dnsRecords.length > 0">
-      <mat-card-header>
-        <mat-card-title>
-          DNS Records ({{ dnsRecords.length }} found)
-        </mat-card-title>
-        <mat-card-subtitle>
-          Showing records for {{ getZoneName(searchForm.get('hostedZoneId')?.value) }}
-          <span *ngIf="searchForm.get('prefix')?.value">
-            filtered by prefix: "{{ searchForm.get('prefix')?.value }}"
-          </span>
-        </mat-card-subtitle>
-        <button mat-icon-button (click)="exportToCsv()" matTooltip="Export to CSV">
+    <div class="results-section" *ngIf="dnsRecords.length > 0 || (searchForm.get('hostedZoneId')?.value && !isLoading)">
+      <div class="results-header">
+        <div class="results-title">
+          <h2>DNS Records ({{ dnsRecords.length }} found)</h2>
+          <p class="results-subtitle">
+            Showing records for {{ getZoneName(searchForm.get('hostedZoneId')?.value) }}
+          </p>
+        </div>
+        <button mat-raised-button 
+                (click)="exportToCsv()" 
+                [disabled]="dnsRecords.length === 0"
+                class="download-btn">
           <mat-icon>download</mat-icon>
+          Download CSV
         </button>
-      </mat-card-header>
+      </div>
 
-      <mat-card-content>
-        <div class="table-container">
-          <table mat-table [dataSource]="dataSource" class="dns-table">
-            <!-- Name Column -->
-            <ng-container matColumnDef="name">
-              <th mat-header-cell *matHeaderCellDef>Record Name</th>
-              <td mat-cell *matCellDef="let record">
+      <div class="table-container" *ngIf="dnsRecords.length > 0">
+        <table class="dns-table">
+          <thead>
+            <tr>
+              <th class="record-name-header">RECORD NAME</th>
+              <th class="type-header">TYPE</th>
+              <th class="ttl-header">TTL</th>
+              <th class="values-header">VALUES</th>
+              <th class="actions-header">ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let record of dnsRecords" class="table-row">
+              <td class="record-name-cell">
                 <div class="record-name">{{ record.name }}</div>
-                <div class="record-id" *ngIf="record.aliasTarget">
-                  Alias: {{ record.aliasTarget }}
-                </div>
               </td>
-            </ng-container>
-
-            <!-- Type Column -->
-            <ng-container matColumnDef="type">
-              <th mat-header-cell *matHeaderCellDef>Type</th>
-              <td mat-cell *matCellDef="let record">
-                <mat-chip-set>
-                  <mat-chip [color]="getTypeColor(record.type)" selected>
-                    {{ record.type }}
-                  </mat-chip>
-                </mat-chip-set>
+              <td class="type-cell">
+                <span class="type-badge" [class]="'type-' + record.type.toLowerCase()">
+                  {{ record.type }}
+                </span>
               </td>
-            </ng-container>
-
-            <!-- TTL Column -->
-            <ng-container matColumnDef="ttl">
-              <th mat-header-cell *matHeaderCellDef>TTL</th>
-              <td mat-cell *matCellDef="let record">
+              <td class="ttl-cell">
                 {{ record.ttl || '-' }}
               </td>
-            </ng-container>
-
-            <!-- Values Column -->
-            <ng-container matColumnDef="values">
-              <th mat-header-cell *matHeaderCellDef>Values</th>
-              <td mat-cell *matCellDef="let record">
+              <td class="values-cell">
                 <div class="values-container">
                   <div *ngFor="let value of record.values" class="value-item">
                     {{ value }}
                   </div>
-                  <div *ngIf="record.values.length === 0" class="no-values">
+                  <div *ngIf="record.aliasTarget" class="alias-target">
+                    Alias: {{ record.aliasTarget }}
+                  </div>
+                  <div *ngIf="record.values.length === 0 && !record.aliasTarget" class="no-values">
                     No values
                   </div>
                 </div>
               </td>
-            </ng-container>
-
-            <!-- Actions Column -->
-            <ng-container matColumnDef="actions">
-              <th mat-header-cell *matHeaderCellDef>Actions</th>
-              <td mat-cell *matCellDef="let record">
-                <button mat-icon-button [matMenuTriggerFor]="menu" matTooltip="More actions">
-                  <mat-icon>more_vert</mat-icon>
+              <td class="actions-cell">
+                <button mat-icon-button [matMenuTriggerFor]="menu" class="actions-btn">
+                  <mat-icon>more_horiz</mat-icon>
                 </button>
                 <mat-menu #menu="matMenu">
                   <button mat-menu-item (click)="copyToClipboard(record.name)">
@@ -145,34 +132,28 @@
                   </button>
                 </mat-menu>
               </td>
-            </ng-container>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-          </table>
+      <!-- No Results -->
+      <div class="no-results" *ngIf="!isLoading && dnsRecords.length === 0 && searchForm.get('hostedZoneId')?.value">
+        <mat-icon class="no-results-icon">search_off</mat-icon>
+        <h3>No DNS records found</h3>
+        <p *ngIf="searchForm.get('prefix')?.value">
+          No records found matching prefix "{{ searchForm.get('prefix')?.value }}"
+        </p>
+        <p *ngIf="!searchForm.get('prefix')?.value">
+          No records found in the selected hosted zone
+        </p>
+      </div>
+    </div>
 
-          <mat-paginator [pageSizeOptions]="[10, 25, 50, 100]" 
-                         showFirstLastButtons 
-                         aria-label="Select page of DNS records">
-          </mat-paginator>
-        </div>
-      </mat-card-content>
-    </mat-card>
-
-    <!-- No Results -->
-    <mat-card class="no-results-card" *ngIf="!isLoading && dnsRecords.length === 0 && searchForm.get('hostedZoneId')?.value">
-      <mat-card-content>
-        <div class="no-results-content">
-          <mat-icon class="no-results-icon">search_off</mat-icon>
-          <h3>No DNS records found</h3>
-          <p *ngIf="searchForm.get('prefix')?.value">
-            No records found matching prefix "{{ searchForm.get('prefix')?.value }}"
-          </p>
-          <p *ngIf="!searchForm.get('prefix')?.value">
-            No records found in the selected hosted zone
-          </p>
-        </div>
-      </mat-card-content>
-    </mat-card>
+    <!-- Loading State -->
+    <div class="loading-section" *ngIf="isLoading">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Loading DNS records...</p>
+    </div>
   </div>
 </div>
