@@ -58,4 +58,60 @@ export class AwsRoute53Service {
       })
     );
   }
+
+  /**
+   * Delete a DNS record
+   */
+  deleteDnsRecord(hostedZoneId: string, record: DnsRecord): Observable<any> {
+    const body = {
+      hostedZoneId: hostedZoneId,
+      action: 'DELETE',
+      record: {
+        name: record.name,
+        type: record.type,
+        ttl: record.ttl,
+        values: record.values,
+        aliasTarget: record.aliasTarget
+      }
+    };
+
+    return this.http.post<any>(`${API_BASE_URL}/records/delete`, body).pipe(
+      catchError(error => {
+        console.error('Error deleting DNS record:', error);
+        let errorMessage = 'Unknown error occurred';
+        
+        if (error.error?.message) {
+          errorMessage = error.error.message;
+        } else if (error.message) {
+          errorMessage = error.message;
+        } else if (error.status === 403) {
+          errorMessage = 'Access denied. Check your AWS permissions.';
+        } else if (error.status === 404) {
+          errorMessage = 'Record not found or already deleted.';
+        } else if (error.status === 400) {
+          errorMessage = 'Invalid request. Cannot delete this record.';
+        }
+        
+        return throwError(() => new Error(errorMessage));
+      })
+    );
+  }
+
+  /**
+   * Check if a record can be safely deleted
+   */
+  canDeleteRecord(record: DnsRecord, zoneName: string): boolean {
+    // Prevent deletion of critical record types
+    const criticalTypes = ['NS', 'SOA'];
+    if (criticalTypes.includes(record.type)) {
+      return false;
+    }
+    
+    // Prevent deletion of root zone records
+    if (record.name === zoneName || record.name === `${zoneName}.`) {
+      return false;
+    }
+    
+    return true;
+  }
 }

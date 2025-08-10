@@ -2,12 +2,14 @@
   <!-- Header -->
   <div class="header">
     <div class="header-left">
-      <mat-icon class="header-icon">search</mat-icon>
+      <div class="header-icon">
+        <span class="icon-text">🔍</span>
+      </div>
       <span class="header-title">Route 53 DNS Viewer</span>
     </div>
     <div class="header-right">
       <button mat-icon-button (click)="logout()" class="logout-btn">
-        <mat-icon>logout</mat-icon>
+        <span class="icon-text">⚙️</span>
       </button>
     </div>
   </div>
@@ -42,7 +44,7 @@
                       (click)="clearSearch()" 
                       *ngIf="searchForm.get('prefix')?.value"
                       class="clear-btn">
-                <mat-icon>close</mat-icon>
+                <span class="icon-text">×</span>
               </button>
             </mat-form-field>
             <span class="form-hint">Leave empty to show all records</span>
@@ -54,7 +56,7 @@
                     (click)="searchRecords()"
                     [disabled]="searchForm.invalid || isLoading"
                     class="search-btn">
-              <mat-icon>refresh</mat-icon>
+              <span class="icon-text">🔄</span>
               <span>Search Records</span>
             </button>
           </div>
@@ -75,7 +77,7 @@
                 (click)="exportToCsv()" 
                 [disabled]="dnsRecords.length === 0"
                 class="download-btn">
-          <mat-icon>download</mat-icon>
+          <span class="icon-text">⬇️</span>
           Download CSV
         </button>
       </div>
@@ -118,19 +120,49 @@
                 </div>
               </td>
               <td class="actions-cell">
-                <button mat-icon-button [matMenuTriggerFor]="menu" class="actions-btn">
-                  <mat-icon>more_horiz</mat-icon>
-                </button>
-                <mat-menu #menu="matMenu">
-                  <button mat-menu-item (click)="copyToClipboard(record.name)">
-                    <mat-icon>content_copy</mat-icon>
-                    Copy Name
+                <div class="actions-container">
+                  <!-- Delete button for individual records -->
+                  <button mat-icon-button 
+                          *ngIf="canDeleteRecord(record)"
+                          (click)="deleteRecord(record)"
+                          [disabled]="isRecordDeleting(record)"
+                          class="delete-btn"
+                          matTooltip="Delete Record">
+                    <mat-spinner diameter="16" *ngIf="isRecordDeleting(record)"></mat-spinner>
+                    <span class="icon-text" *ngIf="!isRecordDeleting(record)">🗑️</span>
                   </button>
-                  <button mat-menu-item (click)="copyToClipboard(record.values.join(', '))">
-                    <mat-icon>content_copy</mat-icon>
-                    Copy Values
+                  
+                  <!-- More actions menu -->
+                  <button mat-icon-button [matMenuTriggerFor]="menu" class="actions-btn">
+                    <span class="icon-text">⋯</span>
                   </button>
-                </mat-menu>
+                  <mat-menu #menu="matMenu">
+                    <button mat-menu-item (click)="copyToClipboard(record.name)">
+                      <span class="icon-text menu-icon">📋</span>
+                      Copy Name
+                    </button>
+                    <button mat-menu-item (click)="copyToClipboard(record.values.join(', '))">
+                      <span class="icon-text menu-icon">📋</span>
+                      Copy Values
+                    </button>
+                    <mat-divider *ngIf="canDeleteRecord(record)"></mat-divider>
+                    <button mat-menu-item 
+                            *ngIf="canDeleteRecord(record)"
+                            (click)="deleteRecord(record)"
+                            [disabled]="isRecordDeleting(record)"
+                            class="delete-menu-item">
+                      <span class="icon-text menu-icon">🗑️</span>
+                      Delete Record
+                    </button>
+                  </mat-menu>
+                  
+                  <!-- Warning for critical records -->
+                  <div *ngIf="!canDeleteRecord(record)" 
+                       class="critical-record-warning"
+                       matTooltip="Critical system records cannot be deleted">
+                    <span class="icon-text">🔒</span>
+                  </div>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -139,7 +171,7 @@
 
       <!-- No Results -->
       <div class="no-results" *ngIf="!isLoading && dnsRecords.length === 0 && searchForm.get('hostedZoneId')?.value">
-        <mat-icon class="no-results-icon">search_off</mat-icon>
+        <div class="no-results-icon">🔍</div>
         <h3>No DNS records found</h3>
         <p *ngIf="searchForm.get('prefix')?.value">
           No records found matching prefix "{{ searchForm.get('prefix')?.value }}"

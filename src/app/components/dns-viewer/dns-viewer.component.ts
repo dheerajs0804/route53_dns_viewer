@@ -20,7 +20,9 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
-
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { DeleteConfirmationDialogComponent } from '../delete-confirmation-dialog/delete-confirmation-dialog.component';
+import { MatDividerModule } from '@angular/material/divider';
 @Component({
   selector: 'app-dns-viewer',
   templateUrl: './dns-viewer.component.html',
@@ -41,7 +43,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     MatToolbarModule,
     MatChipsModule,
     MatMenuModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatDialogModule
   ]
 })
 export class DnsViewerComponent implements OnInit, OnDestroy {
@@ -55,6 +58,7 @@ export class DnsViewerComponent implements OnInit, OnDestroy {
   
   isLoading = false;
   isLoadingZones = false;
+  deletingRecords = new Set<string>(); // Track which records are being deleted
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -62,7 +66,8 @@ export class DnsViewerComponent implements OnInit, OnDestroy {
     private awsService: AwsRoute53Service,
     private authService: AuthService,
     private snackBar: MatSnackBar,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {
     this.searchForm = this.fb.group({
       hostedZoneId: ['', [Validators.required]],
@@ -152,6 +157,72 @@ export class DnsViewerComponent implements OnInit, OnDestroy {
   clearSearch(): void {
     this.searchForm.patchValue({ prefix: '' });
     this.searchRecords();
+  }
+
+  deleteRecord(record: DnsRecord): void {
+    const dialogRef = this.dialog.open(DeleteConfirmationDialogComponent, {
+      width: '500px',
+      data: {
+        recordName: record.name,
+        recordType: record.type,
+        recordValues: record.values,
+        zoneName: this.getZoneName(this.searchForm.get('hostedZoneId')?.value)
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === true) {
+        this.performDelete(record);
+      }
+    });
+  }
+
+  private performDelete(record: DnsRecord): void {
+    const recordKey = `${record.name}-${record.type}`;
+    this.deletingRecords.add(recordKey);
+
+    const hostedZoneId = this.searchForm.get('hostedZoneId')?.value;
+    
+    this.awsService.deleteDnsRecord(hostedZoneId, record).subscribe({
+      next: () => {
+        this.deletingRecords.delete(recordKey);
+        this.snackBar.open(`Successfully deleted ${record.type} record for ${record.name}`, 'Close', {
+          duration: 5000,
+          panelClass: ['success-snackbar']
+        });
+        
+        // Refresh the records list
+        this.searchRecords();
+      },
+      error: (error) => {
+        this.deletingRecords.delete(recordKey);
+        this.snackBar.open(`Failed to delete record: ${error.message}`, 'Close', {
+          duration: 8000,
+          panelClass: ['error-snackbar']
+        });
+      }
+    });
+  }
+
+  isRecordDeleting(record: DnsRecord): boolean {
+    const recordKey = `${record.name}-${record.type}`;
+    return this.deletingRecords.has(recordKey);
+  }
+
+  canDeleteRecord(record: DnsRecord): boolean {
+    // Prevent deletion of critical records
+    const criticalTypes = ['NS', 'SOA'];
+    if (criticalTypes.includes(record.type)) {
+      return false;
+    }
+    
+    // Prevent deletion of root zone records (records that match the zone name exactly)
+    const zoneName = this.getZoneName(this.searchForm.get('hostedZoneId')?.value);
+    if (record.name === zoneName || record.name === `${zoneName}.`) {
+      return false;
+    }
+    
+    return true;
   }
 
   exportToCsv(): void {
