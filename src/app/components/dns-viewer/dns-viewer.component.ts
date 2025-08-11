@@ -44,7 +44,8 @@ import { MatDividerModule } from '@angular/material/divider';
     MatChipsModule,
     MatMenuModule,
     MatTooltipModule,
-    MatDialogModule
+    MatDialogModule,
+    MatDividerModule 
   ]
 })
 export class DnsViewerComponent implements OnInit, OnDestroy {
