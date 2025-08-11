@@ -196,7 +196,11 @@
 }
 
 .search-btn {
+<<<<<<< HEAD
  background: #1a73e8;
+=======
+  background: #2563eb;
+>>>>>>> 36d00fae9b038a86f8ee304248a3e8d8447df129
   color: white;
   padding: 0 24px;
   height: 48px;
@@ -208,7 +212,11 @@
   gap: 8px;
   
   &:hover {
+<<<<<<< HEAD
  background: #0b5cd7;
+=======
+    background: #1d4ed8;
+>>>>>>> 36d00fae9b038a86f8ee304248a3e8d8447df129
   }
   
   &:disabled {
@@ -246,7 +254,11 @@
 }
 
 .download-btn {
+<<<<<<< HEAD
   background: #4CAF50; // A standard green color
+=======
+  background: #16a34a;
+>>>>>>> 36d00fae9b038a86f8ee304248a3e8d8447df129
   color: white;
   padding: 0 16px;
   height: 40px;
@@ -257,7 +269,7 @@
   gap: 8px;
   
   &:hover {
-    background: #047857;
+    background: #15803d;
   }
   
   &:disabled {
