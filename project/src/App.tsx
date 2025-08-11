@@ -135,7 +135,7 @@ function App() {
           </div>
 
           <div className="mt-6">
-            <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center space-x-2 shadow-lg">
+            <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center space-x-2 shadow-lg">
               <RefreshCw className="h-4 w-4" />
               <span>Search Records</span>
             </button>
@@ -151,7 +151,7 @@ function App() {
             </div>
             <button 
               onClick={handleDownload}
-              className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-200 shadow-lg"
+              className="flex items-center space-x-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors duration-200 shadow-lg"
             >
               <Download className="h-4 w-4" />
               <span>Download CSV</span>
