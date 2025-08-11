@@ -64,7 +64,7 @@
                     color="warn" 
                     (click)="searchRecords()"
                     [disabled]="!canSearch() || isLoading"
-                    class="search-btn">
+                    class="search-btn mat-raised-button mat-primary">
               <span class="icon-text">🔄</span>
               <span>Search Records</span>
             </button>
@@ -88,7 +88,7 @@
         <button mat-raised-button 
                 (click)="exportToCsv()" 
                 [disabled]="dnsRecords.length === 0"
-                class="download-btn">
+                class="download-btn mat-raised-button mat-success">
           <span class="icon-text">⬇️</span>
           Download CSV
         </button>
