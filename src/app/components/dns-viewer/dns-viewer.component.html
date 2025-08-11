@@ -22,10 +22,19 @@
 
       <form [formGroup]="searchForm" class="search-form">
         <div class="form-row">
+          <!-- All Zones Option -->
+          <div class="form-group">
+            <mat-checkbox formControlName="allZones" class="all-zones-checkbox">
+              Search across all hosted zones
+            </mat-checkbox>
+          </div>
+        </div>
+        
+        <div class="form-row">
           <div class="form-group">
             <label class="form-label">Hosted Zone</label>
-            <mat-form-field appearance="fill" class="hosted-zone-select">
-              <mat-select formControlName="hostedZoneId" (selectionChange)="onZoneSelectionChange()">
+            <mat-form-field appearance="fill" class="hosted-zone-select" [class.disabled]="searchForm.get('allZones')?.value">
+              <mat-select formControlName="hostedZoneId" (selectionChange)="onZoneSelectionChange()" [disabled]="searchForm.get('allZones')?.value">
                 <mat-option *ngFor="let zone of hostedZones" [value]="zone.id">
                   {{ zone.name }} ({{ zone.id }})
                 </mat-option>
@@ -52,9 +61,9 @@
 
           <div class="form-group">
             <button mat-raised-button 
-                    color="primary" 
+                    color="warn" 
                     (click)="searchRecords()"
-                    [disabled]="searchForm.invalid || isLoading"
+                    [disabled]="!canSearch() || isLoading"
                     class="search-btn">
               <span class="icon-text">🔄</span>
               <span>Search Records</span>
@@ -65,12 +74,15 @@
     </div>
 
     <!-- Results Section -->
-    <div class="results-section" *ngIf="dnsRecords.length > 0 || (searchForm.get('hostedZoneId')?.value && !isLoading)">
+    <div class="results-section" *ngIf="dnsRecords.length > 0 || (canSearch() && !isLoading)">
       <div class="results-header">
         <div class="results-title">
           <h2>DNS Records ({{ dnsRecords.length }} found)</h2>
-          <p class="results-subtitle">
+          <p class="results-subtitle" *ngIf="!searchForm.get('allZones')?.value">
             Showing records for {{ getZoneName(searchForm.get('hostedZoneId')?.value) }}
+          </p>
+          <p class="results-subtitle" *ngIf="searchForm.get('allZones')?.value">
+            Showing records across all hosted zones
           </p>
         </div>
         <button mat-raised-button 
@@ -90,6 +102,7 @@
               <th class="type-header">TYPE</th>
               <th class="ttl-header">TTL</th>
               <th class="values-header">VALUES</th>
+              <th class="zone-header" *ngIf="searchForm.get('allZones')?.value">HOSTED ZONE</th>
               <th class="actions-header">ACTIONS</th>
             </tr>
           </thead>
@@ -118,6 +131,9 @@
                     No values
                   </div>
                 </div>
+              </td>
+              <td class="zone-cell" *ngIf="searchForm.get('allZones')?.value">
+                <span class="zone-badge">{{ record.hostedZoneName || 'Unknown Zone' }}</span>
               </td>
               <td class="actions-cell">
                 <div class="actions-container">

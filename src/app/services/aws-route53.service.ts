@@ -35,7 +35,8 @@ export class AwsRoute53Service {
   listDnsRecords(params: DnsSearchParams): Observable<DnsRecord[]> {
     const body = {
       hostedZoneId: params.hostedZoneId,
-      prefix: params.prefix
+      prefix: params.prefix,
+      allZones: params.allZones || false
     };
     return this.http.post<any[]>(`${API_BASE_URL}/records`, body).pipe(
       map((records: any[]) => records.map(record => ({
@@ -50,7 +51,8 @@ export class AwsRoute53Service {
         geolocation: record.GeoLocation?.CountryCode || record.geolocation,
         latency: record.Region || record.latency,
         multivalueAnswer: record.MultiValueAnswer || record.multivalueAnswer,
-        weight: record.Weight || record.weight
+        weight: record.Weight || record.weight,
+        hostedZoneName: record.HostedZoneName || record.hostedZoneName
       }))),
       catchError(error => {
         console.error('Error listing DNS records:', error);

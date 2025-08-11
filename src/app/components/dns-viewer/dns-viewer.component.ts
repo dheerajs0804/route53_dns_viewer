@@ -23,6 +23,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { DeleteConfirmationDialogComponent } from '../delete-confirmation-dialog/delete-confirmation-dialog.component';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+
 @Component({
   selector: 'app-dns-viewer',
   templateUrl: './dns-viewer.component.html',
@@ -45,7 +47,8 @@ import { MatDividerModule } from '@angular/material/divider';
     MatMenuModule,
     MatTooltipModule,
     MatDialogModule,
-    MatDividerModule 
+    MatDividerModule,
+    MatCheckboxModule
   ]
 })
 export class DnsViewerComponent implements OnInit, OnDestroy {
@@ -71,9 +74,12 @@ export class DnsViewerComponent implements OnInit, OnDestroy {
     private dialog: MatDialog
   ) {
     this.searchForm = this.fb.group({
-      hostedZoneId: ['', [Validators.required]],
-      prefix: ['']
+      hostedZoneId: [''],
+      prefix: [''],
+      allZones: [false]
     });
+    
+    this.updateDisplayedColumns();
   }
 
   ngOnInit(): void {
@@ -87,9 +93,20 @@ export class DnsViewerComponent implements OnInit, OnDestroy {
         distinctUntilChanged()
       )
       .subscribe(() => {
-        if (this.searchForm.get('hostedZoneId')?.value) {
+        if (this.canSearch()) {
           this.searchRecords();
         }
+      });
+
+    // Handle allZones toggle
+    this.searchForm.get('allZones')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(allZones => {
+        if (allZones) {
+          this.searchForm.get('hostedZoneId')?.setValue('');
+        }
+        this.searchForm.get('hostedZoneId')?.updateValueAndValidity();
+        this.updateDisplayedColumns();
       });
   }
 
@@ -127,7 +144,7 @@ export class DnsViewerComponent implements OnInit, OnDestroy {
   }
 
   searchRecords(): void {
-    if (this.searchForm.valid) {
+    if (this.canSearch()) {
       this.isLoading = true;
       const params: DnsSearchParams = this.searchForm.value;
       
@@ -136,6 +153,11 @@ export class DnsViewerComponent implements OnInit, OnDestroy {
           this.dnsRecords = records;
           this.dataSource.data = records;
           this.isLoading = false;
+          
+          this.snackBar.open(`Found ${records.length} DNS records`, 'Close', {
+            duration: 3000,
+            panelClass: ['success-snackbar']
+          });
         },
         error: (error) => {
           this.isLoading = false;
@@ -171,7 +193,7 @@ export class DnsViewerComponent implements OnInit, OnDestroy {
       }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result: boolean) => {
       if (result === true) {
         this.performDelete(record);
       }
@@ -250,14 +272,24 @@ export class DnsViewerComponent implements OnInit, OnDestroy {
   }
 
   private generateCsvContent(): string {
-    const headers = ['Name', 'Type', 'TTL', 'Values', 'Alias Target'];
-    const rows = this.dnsRecords.map(record => [
-      record.name,
-      record.type,
-      record.ttl || '',
-      record.values.join('; '),
-      record.aliasTarget || ''
-    ]);
+    const includeZone = this.searchForm.get('allZones')?.value;
+    const headers = includeZone ? ['Name', 'Type', 'TTL', 'Values', 'Alias Target', 'Hosted Zone'] : ['Name', 'Type', 'TTL', 'Values', 'Alias Target'];
+    
+    const rows = this.dnsRecords.map(record => {
+      const baseRow = [
+        record.name,
+        record.type,
+        record.ttl || '',
+        record.values.join('; '),
+        record.aliasTarget || ''
+      ];
+      
+      if (includeZone) {
+        baseRow.push(record.hostedZoneName || 'Unknown Zone');
+      }
+      
+      return baseRow;
+    });
     
     return [headers, ...rows]
       .map(row => row.map(cell => `"${cell}"`).join(','))
@@ -292,5 +324,17 @@ export class DnsViewerComponent implements OnInit, OnDestroy {
         panelClass: ['error-snackbar']
       });
     });
+  }
+
+  canSearch(): boolean {
+    const form = this.searchForm.value;
+    return form.allZones || (form.hostedZoneId && form.hostedZoneId.trim());
+  }
+
+  updateDisplayedColumns(): void {
+    const allZones = this.searchForm.get('allZones')?.value;
+    this.displayedColumns = allZones 
+      ? ['name', 'type', 'ttl', 'values', 'hostedZone', 'actions']
+      : ['name', 'type', 'ttl', 'values', 'actions'];
   }
 }
