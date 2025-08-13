@@ -75,6 +75,62 @@
   margin: 0 auto;
 }
 
+.zone-filter-info {
+  margin-bottom: 24px;
+  
+  .filter-info-card {
+    background: #2d3748;
+    border: 1px solid #4a5568;
+    border-radius: 8px;
+    
+    mat-card-header {
+      padding: 16px 16px 0 16px;
+      
+      mat-card-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #e2e8f0;
+        font-size: 16px;
+        font-weight: 600;
+        
+        mat-icon {
+          color: #63b3ed;
+        }
+      }
+    }
+    
+    mat-card-content {
+      padding: 16px;
+      
+      .filter-description {
+        color: #a0aec0;
+        margin: 0 0 16px 0;
+        font-size: 14px;
+      }
+      
+      .filter-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        
+        .stat-item {
+          background: #4a5568;
+          padding: 8px 12px;
+          border-radius: 6px;
+          font-size: 13px;
+          color: #e2e8f0;
+          
+          strong {
+            color: #ffffff;
+            margin-right: 4px;
+          }
+        }
+      }
+    }
+  }
+}
+
 .search-section {
   margin-bottom: 32px;
 }
@@ -196,8 +252,8 @@
 }
 
 .search-btn {
-  background: #4f46e5;
-  color: white;
+  background: #4f46e5 !important;
+  color: white !important;
   padding: 0 24px;
   height: 48px;
   border-radius: 8px;
@@ -208,12 +264,12 @@
   gap: 8px;
   
   &:hover {
-    background: #4338ca;
+    background: #4338ca !important;
   }
   
   &:disabled {
-    background: #374151;
-    color: #6b7280;
+    background: #374151 !important;
+    color: #6b7280 !important;
   }
 }
 
@@ -246,8 +302,8 @@
 }
 
 .download-btn {
-  background: #059669;
-  color: white;
+  background: #059669 !important;
+  color: white !important;
   padding: 0 16px;
   height: 40px;
   border-radius: 8px;
@@ -257,12 +313,12 @@
   gap: 8px;
   
   &:hover {
-    background: #047857;
+    background: #047857 !important;
   }
   
   &:disabled {
-    background: #374151;
-    color: #6b7280;
+    background: #374151 !important;
+    color: #6b7280 !important;
   }
 }
 

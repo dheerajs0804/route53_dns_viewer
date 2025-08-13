@@ -3,6 +3,8 @@ import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { DnsRecord, HostedZone, DnsSearchParams } from '../models/dns-record.interface';
+import { ZoneFilterService } from './zone-filter.service';
+import { environment } from '../../environments/environment';
 
 const API_BASE_URL = 'https://j125ycvo89.execute-api.eu-north-1.amazonaws.com/prod';
 
@@ -10,18 +12,34 @@ const API_BASE_URL = 'https://j125ycvo89.execute-api.eu-north-1.amazonaws.com/pr
   providedIn: 'root'
 })
 export class AwsRoute53Service {
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private zoneFilterService: ZoneFilterService
+  ) {}
 
   /**
-   * List all hosted zones via Lambda API
+   * List all hosted zones via Lambda API (filtered based on environment configuration)
    */
   listHostedZones(): Observable<HostedZone[]> {
     return this.http.get<any[]>(`${API_BASE_URL}/zones`).pipe(
-      map((zones: any[]) => zones.map(zone => ({
-        id: zone.Id?.replace('/hostedzone/', '') || zone.id || '',
-        name: zone.Name || zone.name || '',
-        resourceRecordSetCount: zone.ResourceRecordSetCount || zone.resourceRecordSetCount
-      }))),
+      map((zones: any[]) => {
+        // Map the zones to our interface
+        const mappedZones = zones.map(zone => ({
+          id: zone.Id?.replace('/hostedzone/', '') || zone.id || '',
+          name: zone.Name || zone.name || '',
+          resourceRecordSetCount: zone.ResourceRecordSetCount || zone.resourceRecordSetCount
+        }));
+
+        // Apply zone filtering based on environment configuration
+        const filteredZones = this.zoneFilterService.filterZones(mappedZones);
+        
+        // Log filtering information for debugging
+        if (environment.hostedZoneFilter?.enabled) {
+          console.log(`Zone filtering enabled: ${mappedZones.length} total zones, ${filteredZones.length} visible zones`);
+        }
+
+        return filteredZones;
+      }),
       catchError(error => {
         console.error('Error listing hosted zones:', error);
         return throwError(() => new Error(`Failed to list hosted zones: ${error.message}`));

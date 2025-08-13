@@ -5,16 +5,17 @@ import { Router } from '@angular/router';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import { AwsRoute53Service } from '../../services/aws-route53.service';
 import { AuthService } from '../../services/auth.service';
+import { ZoneFilterService } from '../../services/zone-filter.service';
 import { DnsRecord, HostedZone, DnsSearchParams } from '../../models/dns-record.interface';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
-import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatChipsModule } from '@angular/material/chips';
@@ -63,12 +64,17 @@ export class DnsViewerComponent implements OnInit, OnDestroy {
   isLoading = false;
   isLoadingZones = false;
   deletingRecords = new Set<string>(); // Track which records are being deleted
+  
+  // Zone filtering information
+  zoneFilterInfo: any = null;
+  
   private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
     private awsService: AwsRoute53Service,
     private authService: AuthService,
+    private zoneFilterService: ZoneFilterService,
     private snackBar: MatSnackBar,
     private router: Router,
     private dialog: MatDialog
@@ -126,6 +132,11 @@ export class DnsViewerComponent implements OnInit, OnDestroy {
       next: (zones) => {
         this.hostedZones = zones;
         this.isLoadingZones = false;
+        
+        // Get zone filter information for display
+        this.zoneFilterInfo = this.zoneFilterService.getFilterConfig();
+        this.zoneFilterInfo.totalZones = zones.length;
+        this.zoneFilterInfo.visibleZones = zones.length;
         
         // Auto-select first zone if available
         if (zones.length > 0 && !this.searchForm.get('hostedZoneId')?.value) {

@@ -15,6 +15,34 @@
   </div>
 
   <div class="content">
+    <!-- Zone Filtering Information -->
+    <div class="zone-filter-info" *ngIf="zoneFilterInfo?.enabled">
+      <mat-card class="filter-info-card">
+        <mat-card-header>
+          <mat-card-title>
+            <mat-icon>filter_list</mat-icon>
+            Zone Filtering Active
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <p class="filter-description">
+            Only specific hosted zones are visible based on environment configuration.
+          </p>
+          <div class="filter-stats">
+            <span class="stat-item">
+              <strong>Visible Zones:</strong> {{ zoneFilterInfo.visibleZones }}
+            </span>
+            <span class="stat-item" *ngIf="zoneFilterInfo.allowedZones?.length">
+              <strong>Allowed Zones:</strong> {{ zoneFilterInfo.allowedZones.join(', ') }}
+            </span>
+            <span class="stat-item" *ngIf="zoneFilterInfo.allowedZonePatterns?.length">
+              <strong>Allowed Patterns:</strong> {{ zoneFilterInfo.allowedZonePatterns.join(', ') }}
+            </span>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
     <!-- Search Form -->
     <div class="search-section">
       <h2 class="section-title">Search DNS Records</h2>
@@ -61,7 +89,7 @@
 
           <div class="form-group">
             <button mat-raised-button 
-                    color="warn" 
+                    color="primary" 
                     (click)="searchRecords()"
                     [disabled]="!canSearch() || isLoading"
                     class="search-btn">
@@ -86,6 +114,7 @@
           </p>
         </div>
         <button mat-raised-button 
+                color="accent" 
                 (click)="exportToCsv()" 
                 [disabled]="dnsRecords.length === 0"
                 class="download-btn">
