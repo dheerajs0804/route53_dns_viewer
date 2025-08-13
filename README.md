@@ -1,215 +1,328 @@
-# Route 53 DNS Viewer
+# Route 53 DNS Management Dashboard
 
-A modern Angular web application that integrates with AWS SDK to list DNS records from Route 53 hosted zones, filtered by a given prefix string.
+A modern **Angular 17+** web application that provides secure, scalable DNS management through a **serverless backend** architecture. The application integrates with **AWS Route 53** via **AWS Lambda** and **API Gateway** to list and manage DNS records across multiple hosted zones with advanced filtering capabilities.
 
-## Features
+## 🚀 **Features**
 
-- 🔐 **Secure Authentication**: AWS credentials-based authentication with support for temporary credentials
-- 🌐 **Hosted Zone Selection**: Auto-populated dropdown of available Route 53 hosted zones
-- 🔍 **Prefix Filtering**: Search DNS records by prefix with real-time filtering
-- 📊 **Clean Table Display**: Material Design table showing Record Name, Type, TTL, and Values
+- 🔐 **Secure Serverless Architecture**: **AWS Lambda** + **API Gateway** backend with **IAM role-based authentication**
+- 🌐 **Advanced Zone Filtering**: Environment-based access control with **exact names** and **wildcard patterns**
+- 🔍 **Multi-Zone Search**: Search DNS records across **all hosted zones** simultaneously or specific zones
+- 📊 **Dynamic Table Display**: **Material Design** table with responsive columns and real-time data
+- 🔍 **Prefix Filtering**: Search DNS records by prefix with **debounced real-time filtering**
 - 📄 **Pagination**: Handle large numbers of DNS records efficiently
 - 📥 **CSV Export**: Export filtered results to CSV format
-- 📱 **Responsive Design**: Works on desktop and mobile devices
-- ⚡ **Loading States**: Spinners and progress indicators for better UX
-- 🎨 **Modern UI**: Clean, professional interface using Angular Material
+- 📱 **Responsive Design**: Works seamlessly on desktop and mobile devices
+- ⚡ **Loading States**: Spinners and progress indicators for enhanced UX
+- 🎨 **Modern UI**: Clean, professional interface using **Angular Material** components
+- 🛡️ **Security**: No AWS credentials stored in frontend - secure through Lambda execution roles
 
-## Prerequisites
+## 🏗️ **Architecture Overview**
 
-- Node.js (v20.16.0 or higher)
-- npm or yarn
-- AWS Account with Route 53 access
-- IAM user with `AmazonRoute53ReadOnlyAccess` policy
+```
+┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
+│   Angular App   │───▶│   API Gateway    │───▶│   AWS Lambda    │
+│   (Frontend)    │    │   (REST API)     │    │   (Backend)     │
+└─────────────────┘    └──────────────────┘    └─────────────────┘
+                                │                        │
+                                ▼                        ▼
+                       ┌──────────────────┐    ┌─────────────────┐
+                       │   CORS Config    │    │   Route 53      │
+                       │   (Security)     │    │   (DNS Service) │
+                       └──────────────────┘    └─────────────────┘
+```
 
-## Installation
+## 📋 **Prerequisites**
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd route53-dns-viewer
-   ```
+- **Node.js** (v20.16.0 or higher)
+- **npm** or **yarn**
+- **AWS Account** with Route 53 access
+- **AWS CLI** configured (for deployment)
+- **IAM Role** with `AmazonRoute53ReadOnlyAccess` policy (for Lambda)
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+## 🚀 **Quick Start**
 
-3. **Start the development server**
-   ```bash
-   npm start
-   ```
+### 1. **Clone the Repository**
+```bash
+git clone <repository-url>
+cd route53-dns-viewer
+```
 
-4. **Open your browser**
-   Navigate to `http://localhost:4200`
+### 2. **Install Dependencies**
+```bash
+npm install
+```
 
-## AWS Setup
+### 3. **Configure Environment**
+Update `src/environments/environment.ts` with your API Gateway URL:
+```typescript
+export const environment = {
+  production: false,
+  apiUrl: 'https://your-api-gateway-url.amazonaws.com/prod',
+  hostedZoneFilter: {
+    enabled: true,
+    allowedZones: ['yourdomain.com', '*.internal'],
+    allowedZonePatterns: ['prod-*', 'eu-*']
+  }
+};
+```
 
-### Option 1: IAM User (Recommended for Development)
+### 4. **Start Development Server**
+```bash
+npm start
+```
 
-1. **Create an IAM User**
-   - Go to AWS IAM Console
-   - Create a new user or select existing user
-   - Attach the `AmazonRoute53ReadOnlyAccess` policy
+### 5. **Open Browser**
+Navigate to `http://localhost:4200`
 
-2. **Create Access Keys**
-   - In the Security credentials tab, create access keys
-   - Note down the Access Key ID and Secret Access Key
+## 🔧 **AWS Infrastructure Setup**
 
-3. **Use in Application**
-   - Enter the credentials in the login form
-   - Select your preferred AWS region
+### **Lambda Functions**
 
-### Option 2: Temporary Credentials (For Production)
+The application requires three Lambda functions exposed through API Gateway:
 
-1. **Use AWS STS**
-   ```bash
-   aws sts get-session-token
-   ```
+#### **1. List Hosted Zones**
+- **Endpoint**: `GET /zones`
+- **Function**: Lists all Route 53 hosted zones
+- **Permissions**: `route53:ListHostedZones`
 
-2. **Use in Application**
-   - Enter the temporary credentials including the session token
-   - These credentials expire after the specified duration
+#### **2. List DNS Records**
+- **Endpoint**: `POST /records`
+- **Function**: Retrieves DNS records with optional filtering
+- **Parameters**: `hostedZoneId`, `prefix`, `allZones`
+- **Permissions**: `route53:ListResourceRecordSets`
 
-### Option 3: AWS Cognito (For Production)
+#### **3. Delete DNS Record**
+- **Endpoint**: `POST /records/delete`
+- **Function**: Deletes specified DNS records
+- **Permissions**: `route53:ChangeResourceRecordSets`
 
-For production applications, consider using AWS Cognito Identity Pools for secure, token-based authentication.
+### **API Gateway Configuration**
 
-## Usage
+- **REST API** with CORS enabled
+- **Lambda proxy integration** for each endpoint
+- **API key** (optional) for additional security
+- **Usage plans** for rate limiting
 
-1. **Login**
-   - Enter your AWS credentials
-   - Select your AWS region
-   - Click "Login to AWS"
+### **IAM Role for Lambda**
 
-2. **Select Hosted Zone**
-   - Choose from the dropdown of available hosted zones
-   - The application will automatically load DNS records
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "route53:ListHostedZones",
+        "route53:ListResourceRecordSets",
+        "route53:ChangeResourceRecordSets"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
 
-3. **Filter Records**
-   - Enter a prefix to filter records (e.g., "www", "api", "subdomain")
-   - Leave empty to show all records
-   - Results update automatically as you type
+## 🎯 **Usage Guide**
 
-4. **View Results**
-   - Records are displayed in a clean table format
-   - Use pagination to navigate through large result sets
-   - Click the export button to download results as CSV
+### **1. Authentication**
+- Simple login interface (no AWS credentials needed)
+- Authentication handled through Lambda execution roles
+- Secure access to Route 53 resources
 
-5. **Additional Actions**
-   - Use the menu button on each record for copy actions
-   - Logout using the button in the top-right corner
+### **2. Zone Selection & Filtering**
+- **Single Zone**: Select specific hosted zone from dropdown
+- **Multi-Zone**: Check "Search All Zones" to search across all visible zones
+- **Zone Filtering**: Only zones matching environment configuration are visible
 
-## Project Structure
+### **3. DNS Record Search**
+- **Prefix Filtering**: Enter text to filter records (e.g., "www", "api")
+- **Real-time Results**: Results update as you type with debouncing
+- **Multi-zone Display**: Shows hosted zone name when searching across zones
+
+### **4. Data Management**
+- **View Records**: Clean table display with pagination
+- **Export Data**: Download filtered results as CSV
+- **Copy Actions**: Quick copy of record values
+
+## 📁 **Project Structure**
 
 ```
 src/
 ├── app/
 │   ├── components/
 │   │   ├── login/
-│   │   │   ├── login.component.ts
-│   │   │   ├── login.component.html
-│   │   │   └── login.component.scss
+│   │   │   ├── login.component.ts          # Simplified login
+│   │   │   ├── login.component.html        # Basic login button
+│   │   │   └── login.component.scss        # Login styles
 │   │   └── dns-viewer/
-│   │       ├── dns-viewer.component.ts
-│   │       ├── dns-viewer.component.html
-│   │       └── dns-viewer.component.scss
+│   │       ├── dns-viewer.component.ts     # Main DNS viewer logic
+│   │       ├── dns-viewer.component.html   # Multi-zone interface
+│   │       └── dns-viewer.component.scss   # Viewer styles
 │   ├── services/
-│   │   ├── auth.service.ts
-│   │   └── aws-route53.service.ts
+│   │   ├── auth.service.ts                 # Authentication state
+│   │   ├── aws-route53.service.ts         # API Gateway integration
+│   │   └── zone-filter.service.ts          # Zone filtering logic
 │   ├── models/
-│   │   └── dns-record.interface.ts
+│   │   └── dns-record.interface.ts         # Data interfaces
 │   ├── guards/
-│   │   └── auth.guard.ts
-│   ├── app.component.ts
-│   ├── app.routes.ts
-│   └── app.config.ts
-├── styles.scss
-└── main.ts
+│   │   └── auth.guard.ts                   # Route protection
+│   ├── environments/
+│   │   ├── environment.ts                  # Dev configuration
+│   │   └── environment.prod.ts             # Prod configuration
+│   ├── app.component.ts                    # Main app component
+│   ├── app.routes.ts                       # Application routing
+│   └── app.config.ts                       # App configuration
+├── styles.scss                             # Global styles
+└── main.ts                                 # Application entry point
 ```
 
-## Key Components
+## 🔑 **Key Components**
 
-### Services
-- **AuthService**: Manages authentication state and credentials
-- **AwsRoute53Service**: Handles AWS Route 53 API calls using AWS SDK v3
+### **Services**
+- **AuthService**: Manages authentication state and navigation
+- **AwsRoute53Service**: HTTP client integration with API Gateway endpoints
+- **ZoneFilterService**: Filters hosted zones based on environment configuration
 
-### Components
-- **LoginComponent**: AWS credentials input and authentication
-- **DnsViewerComponent**: Main application interface for DNS record management
+### **Components**
+- **LoginComponent**: Simple authentication interface
+- **DnsViewerComponent**: Advanced DNS management with multi-zone support
 
-### Guards
-- **AuthGuard**: Protects routes requiring authentication
+### **Features**
+- **Zone Filtering**: Environment-based access control
+- **Multi-Zone Search**: Cross-zone DNS record discovery
+- **Real-time Filtering**: Debounced search with instant results
+- **Responsive Design**: Mobile-first Material Design interface
 
-## Technologies Used
+## 🛠️ **Technologies Used**
 
-- **Angular 19**: Latest stable version with standalone components
-- **Angular Material**: UI components and theming
-- **AWS SDK v3**: JavaScript SDK for AWS services
-- **RxJS**: Reactive programming for state management
-- **TypeScript**: Type-safe JavaScript development
+- **Frontend**: **Angular 17+** with standalone components
+- **UI Framework**: **Angular Material** for modern design
+- **Backend**: **AWS Lambda** with **Node.js 18.x**
+- **API**: **AWS API Gateway** with REST endpoints
+- **DNS Service**: **AWS Route 53**
+- **State Management**: **RxJS** for reactive programming
+- **Language**: **TypeScript** for type safety
+- **Styling**: **SCSS** with Material Design theming
 
-## Security Considerations
+## 🔒 **Security Features**
 
-⚠️ **Important**: This demo application stores AWS credentials in localStorage for convenience. For production use:
+✅ **No AWS Credentials in Frontend**
+✅ **IAM Role-based Authentication**
+✅ **CORS Configuration**
+✅ **API Gateway Security**
+✅ **Environment-based Access Control**
+✅ **Zone Filtering for Multi-tenancy**
 
-1. **Use AWS Cognito Identity Pools** for secure, token-based authentication
-2. **Implement proper session management** with secure token storage
-3. **Use HTTPS** in production environments
-4. **Follow AWS security best practices** for credential management
+## 🚀 **Development Commands**
 
-## Development
-
-### Build for Production
+### **Build & Run**
 ```bash
+# Development
+npm start
+
+# Production build
 npm run build
+
+# Preview production build
+npm run preview
 ```
 
-### Run Tests
+### **Code Quality**
 ```bash
-npm test
-```
-
-### Lint Code
-```bash
+# Lint code
 npm run lint
+
+# Run tests
+npm test
+
+# Check formatting
+npm run format
 ```
 
-## Troubleshooting
+## 🐛 **Troubleshooting**
 
-### Common Issues
+### **Common Issues**
 
 1. **CORS Errors**
-   - Ensure your AWS credentials have proper Route 53 permissions
-   - Check that the selected region is correct
+   - Verify API Gateway CORS configuration
+   - Check Lambda function response headers
 
 2. **No Hosted Zones Found**
-   - Verify your AWS account has Route 53 hosted zones
-   - Check that your credentials have `route53:ListHostedZones` permission
+   - Verify Lambda execution role has Route 53 permissions
+   - Check zone filtering configuration in environment files
+   - Ensure zone names end with trailing dots (e.g., `domain.com.`)
 
-3. **Authentication Failures**
-   - Verify your AWS credentials are correct
-   - Ensure the selected region matches your hosted zones
-   - For temporary credentials, include the session token
+3. **API Gateway Errors**
+   - Check Lambda function logs in CloudWatch
+   - Verify API endpoint URLs in environment configuration
+   - Ensure Lambda functions are properly deployed
 
-### Debug Mode
+4. **Zone Filtering Issues**
+   - Update environment configuration with correct zone names
+   - Use trailing dots for zone names (e.g., `domain.com.`)
+   - Check wildcard pattern syntax
 
-Enable debug logging by opening browser developer tools and checking the console for detailed error messages.
+### **Debug Mode**
+Enable debug logging in browser developer tools console for detailed error messages and API request/response information.
 
-## Contributing
+## 📚 **Configuration Guide**
+
+### **Zone Filtering Configuration**
+
+The application supports flexible zone filtering through environment configuration:
+
+```typescript
+hostedZoneFilter: {
+  enabled: true,
+  allowedZones: [
+    'product1.com.',           // Exact zone names (with trailing dot)
+    'internal.product2.com.'   // Subdomain zones
+  ],
+  allowedZonePatterns: [
+    'prod-*',                  // Wildcard patterns
+    '*.internal',              // Suffix patterns
+    'eu-*',                    // Prefix patterns
+    'us-*'
+  ]
+}
+```
+
+### **Environment Variables**
+
+- **Development**: `src/environments/environment.ts`
+- **Production**: `src/environments/environment.prod.ts`
+- **API URL**: Your API Gateway endpoint
+- **Zone Filtering**: Access control configuration
+
+## 🤝 **Contributing**
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## License
+## 📄 **License**
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Support
+## 🆘 **Support**
 
 For issues and questions:
 - Check the troubleshooting section above
-- Review AWS Route 53 documentation
+- Review [AWS Route 53 documentation](https://docs.aws.amazon.com/route53/)
 - Open an issue in the repository
+- Check Lambda function logs in AWS CloudWatch
+
+## 🔮 **Future Enhancements**
+
+- **DNS Record Creation/Editing**: Full CRUD operations
+- **Bulk Operations**: Multi-record management
+- **Advanced Filtering**: Regex and complex search patterns
+- **Audit Logging**: Track DNS changes and access
+- **Multi-region Support**: Route 53 across different AWS regions
+- **Webhook Integration**: Real-time notifications for DNS changes
+
+---
+
+**Built with ❤️ using Angular, AWS Lambda, and modern web technologies**
