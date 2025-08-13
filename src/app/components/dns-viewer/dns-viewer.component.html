@@ -60,7 +60,9 @@
           </div>
 
           <div class="form-group">
-            <button (click)="searchRecords()"
+            <button mat-raised-button 
+                    color="warn" 
+                    (click)="searchRecords()"
                     [disabled]="!canSearch() || isLoading"
                     class="search-btn">
               <span class="icon-text">🔄</span>
@@ -83,10 +85,13 @@
             Showing records across all hosted zones
           </p>
         </div>
-        <button class="download-btn"
- (click)="exportToCsv()"
- [disabled]="dnsRecords.length === 0">
- <span class="icon-text">⬇️</span> Download CSV</button>
+        <button mat-raised-button 
+                (click)="exportToCsv()" 
+                [disabled]="dnsRecords.length === 0"
+                class="download-btn">
+          <span class="icon-text">⬇️</span>
+          Download CSV
+        </button>
       </div>
 
       <div class="table-container" *ngIf="dnsRecords.length > 0">
